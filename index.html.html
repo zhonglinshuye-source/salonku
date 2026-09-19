@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salonku — スラバヤ サロン予約デモ</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --pink: #EC1E63;
+    --pink-deep: #C4104C;
+    --pink-soft: #FFE8EF;
+    --gold: #F2A900;
+    --ink: #2A2226;
+    --ink-soft: #857A80;
+    --line: #F0E4E8;
+    --bg: #FAF7F8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--ink); line-height: 1.5; padding-bottom: 64px; }
+  .wrap { max-width: 460px; margin: 0 auto; }
+
+  /* Top bar */
+  .topbar {
+    background: linear-gradient(135deg, var(--pink) 0%, #FF5C8A 100%);
+    padding: 14px 16px 18px;
+    color: white;
+  }
+  .topbar-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .brand { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; display: flex; align-items: center; gap: 6px; }
+  .brand .dot { width: 8px; height: 8px; background: var(--gold); border-radius: 50%; display: inline-block; }
+  .loc { font-size: 12px; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 20px; font-weight: 600; }
+  .searchbar {
+    background: white;
+    border-radius: 10px;
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #A89AA0;
+    font-size: 13.5px;
+    font-weight: 500;
+  }
+  .searchbar svg { flex-shrink: 0; }
+
+  /* Category pills */
+  .cats { display: flex; gap: 8px; padding: 14px 16px; overflow-x: auto; }
+  .cat-pill {
+    flex-shrink: 0;
+    background: white;
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 20px;
+  }
+  .cat-pill.active { background: var(--pink); color: white; border-color: var(--pink); }
+
+  /* Coupon banner */
+  .coupon-banner {
+    margin: 0 16px 18px;
+    background: linear-gradient(90deg, #FFF3D6 0%, #FFE9BF 100%);
+    border: 1px solid #F2D9A0;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .coupon-banner .badge {
+    background: var(--gold);
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 8px;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+  .coupon-banner p { font-size: 12.5px; font-weight: 600; color: #6B4E12; }
+
+  section { padding: 6px 16px 22px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+  .sec-head h2 { font-size: 17px; font-weight: 800; }
+  .sec-head .more { font-size: 12px; color: var(--pink); font-weight: 700; }
+
+  /* Ranking cards */
+  .salon-list { display: flex; flex-direction: column; gap: 12px; }
+  .salon-card {
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border: 1px solid var(--line);
+  }
+  .photo {
+    height: 118px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .photo-1 { background: linear-gradient(135deg, #FFB3C6, #FF7A9C); }
+  .photo-2 { background: linear-gradient(135deg, #FFD9A0, #F2A900); }
+  .photo-3 { background: linear-gradient(135deg, #C9A0DC, #9D6BB5); }
+  .photo svg { opacity: 0.9; }
+  .rank-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: var(--ink);
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .rank-badge.gold { background: var(--gold); }
+  .fav-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 26px; height: 26px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card-body { padding: 12px 14px 14px; }
+  .card-body h3 { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+  .rating-row { display: flex; align-items: center; gap: 5px; margin-bottom: 4px; }
+  .stars { color: var(--gold); font-size: 12.5px; letter-spacing: 1px; }
+  .rating-num { font-size: 12.5px; font-weight: 700; color: var(--ink); }
+  .rvcount { font-size: 11.5px; color: var(--ink-soft); }
+  .meta-line { font-size: 12px; color: var(--ink-soft); margin-bottom: 10px; }
+  .price-tag { color: var(--pink-deep); font-weight: 700; }
+
+  .slots-label { font-size: 11.5px; color: var(--ink-soft); font-weight: 700; margin-bottom: 6px; }
+  .slots { display: flex; flex-wrap: wrap; gap: 6px; }
+  .slot-btn {
+    border: 1.5px solid var(--pink);
+    background: var(--pink-soft);
+    color: var(--pink-deep);
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 7px 11px;
+    border-radius: 8px;
+  }
+  .slot-btn.taken { border-color: var(--line); color: #C4B8BD; background: #F4EFF1; text-decoration: line-through; }
+
+  /* Admin */
+  .admin-toggle { display: block; width: 100%; text-align: center; background: none; border: none; color: var(--ink-soft); font-size: 12.5px; padding: 10px 0; text-decoration: underline; }
+  .admin-panel { display: none; background: white; border: 1px dashed var(--line); border-radius: 14px; padding: 16px; margin-top: 8px; }
+  .admin-panel.open { display: block; }
+  .admin-panel h3 { font-size: 14.5px; margin-bottom: 10px; font-weight: 800; }
+  .field-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .field-row label { font-size: 12px; color: var(--ink-soft); font-weight: 700; }
+  .field-row input { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); font-size: 13.5px; font-family: 'Inter', sans-serif; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 18px; border-radius: 10px; font-weight: 700; font-size: 13.5px; border: none; width: 100%; }
+  .btn-primary { background: var(--pink); color: white; }
+  .btn-secondary { background: var(--pink-soft); color: var(--pink-deep); margin-top: 6px; }
+
+  .toast { position: fixed; left: 50%; bottom: 76px; transform: translateX(-50%) translateY(20px); background: var(--ink); color: white; padding: 11px 16px; border-radius: 10px; font-size: 13px; max-width: 90vw; opacity: 0; transition: all 0.25s ease; pointer-events: none; z-index: 50; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Bottom nav */
+  .bottomnav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: white;
+    border-top: 1px solid var(--line);
+    display: flex;
+    max-width: 460px;
+    margin: 0 auto;
+  }
+  .nav-item { flex: 1; text-align: center; padding: 8px 0 10px; font-size: 10.5px; font-weight: 700; color: var(--ink-soft); }
+  .nav-item.active { color: var(--pink); }
+  .nav-item .ic { font-size: 18px; display: block; margin-bottom: 2px; }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-row">
+      <div class="brand"><span class="dot"></span>Salonku</div>
+      <div class="loc">📍 Surabaya</div>
+    </div>
+    <div class="searchbar">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A89AA0" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      サロン・エリア・メニューを検索...
+    </div>
+  </div>
+
+  <div class="cats">
+    <div class="cat-pill active">すべて</div>
+    <div class="cat-pill">カット</div>
+    <div class="cat-pill">クリームバス</div>
+    <div class="cat-pill">ネイル</div>
+    <div class="cat-pill">スパ＆マッサージ</div>
+  </div>
+
+  <div class="coupon-banner">
+    <div class="badge">PROMO</div>
+    <p>初回予約で15%オフ — 提携サロン全店で利用可能</p>
+  </div>
+
+  <section>
+    <div class="sec-head">
+      <h2>今週の人気サロンランキング</h2>
+      <span class="more">すべて見る ›</span>
+    </div>
+    <div class="salon-list" id="salonList"></div>
+
+    <button class="admin-toggle" id="adminToggle">サロンオーナーです — 予約枠を管理する</button>
+    <div class="admin-panel" id="adminPanel">
+      <h3>サロンを追加・編集</h3>
+      <div class="field-row"><label>サロン名</label><input id="a-name" placeholder="例：Ratu Hair Studio"></div>
+      <div class="field-row"><label>エリア・メニュー</label><input id="a-meta" placeholder="例：Gubeng・カット＆クリームバス"></div>
+      <div class="field-row"><label>最低料金（Rp）</label><input id="a-price" placeholder="例：65.000"></div>
+      <div class="field-row"><label>WhatsApp番号（62から始まる形式）</label><input id="a-wa" placeholder="6281234567890"></div>
+      <div class="field-row"><label>空き時間（カンマ区切り）</label><input id="a-slots" placeholder="10.00, 13.00, 16.30"></div>
+      <button class="btn btn-primary" id="a-add">サロンを追加</button>
+      <button class="btn btn-secondary" id="a-reset">サンプルデータに戻す</button>
+    </div>
+  </section>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="bottomnav">
+    <div class="nav-item active"><span class="ic">🏠</span>ホーム</div>
+    <div class="nav-item"><span class="ic">🔍</span>検索</div>
+    <div class="nav-item"><span class="ic">📅</span>予約</div>
+    <div class="nav-item"><span class="ic">♡</span>お気に入り</div>
+    <div class="nav-item"><span class="ic">👤</span>マイページ</div>
+  </div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script>
+  // ==== Firebase接続設定（みきやさんのFirebaseプロジェクトのキー） ====
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3StwmRccNy4Lq0h7LsFZkJAxs3LYjBPY",
+    authDomain: "mikiya-7291b.firebaseapp.com",
+    projectId: "mikiya-7291b",
+    storageBucket: "mikiya-7291b.firebasestorage.app",
+    messagingSenderId: "558684091733",
+    appId: "1:558684091733:web:031bfdced24ec563faebdc",
+    measurementId: "G-BQTL00WK6D"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const salonsRef = db.collection('salons');
+
+  const PHOTO_CLASS = ['photo-1', 'photo-2', 'photo-3'];
+  const RANK_ICON = ['✂️', '💅', '💇'];
+
+  const DEFAULT_DATA = [
+    { name: 'Ratu Hair Studio', meta: 'Gubeng・カット＆クリームバス', price: '65.000', rating: 4.8, reviews: 132, wa: '6281234567890',
+      slots: [{time:'10.00', taken:false},{time:'14.00', taken:false},{time:'16.00', taken:true}] },
+    { name: 'Vania Nail & Spa', meta: 'Darmo・ネイルアート＆マッサージ', price: '90.000', rating: 4.9, reviews: 208, wa: '6281234567891',
+      slots: [{time:'11.30', taken:false},{time:'16.30', taken:false}] },
+    { name: 'De Barber House', meta: 'Rungkut・メンズカット', price: '45.000', rating: 4.6, reviews: 76, wa: '6281234567892',
+      slots: [{time:'09.00', taken:true},{time:'11.00', taken:false},{time:'15.00', taken:false}] },
+  ];
+
+  let data = []; // { id, name, meta, price, rating, reviews, wa, slots }
+  let seeded = false;
+
+  // Firestoreの中身をリアルタイムで監視。誰かが予約すると全員の画面が自動更新される。
+  salonsRef.orderBy('__name__').onSnapshot(async (snapshot) => {
+    if (snapshot.empty && !seeded) {
+      seeded = true;
+      for (const salon of DEFAULT_DATA) {
+        await salonsRef.add(salon);
+      }
+      return; // 追加後、再度onSnapshotが呼ばれて描画される
+    }
+    data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    render();
+  }, (err) => {
+    console.error(err);
+    showToast('データベースに接続できませんでした');
+  });
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  function starString(rating) {
+    const full = Math.round(rating);
+    return '★'.repeat(full) + '☆'.repeat(5 - full);
+  }
+
+  function render() {
+    const list = document.getElementById('salonList');
+    list.innerHTML = '';
+    data.forEach((salon, si) => {
+      const card = document.createElement('div');
+      card.className = 'salon-card';
+
+      const rank = si + 1;
+      const rankClass = rank === 1 ? 'gold' : '';
+      const photoClass = PHOTO_CLASS[si % PHOTO_CLASS.length];
+      const icon = RANK_ICON[si % RANK_ICON.length];
+
+      card.innerHTML = `
+        <div class="photo ${photoClass}">
+          <div class="rank-badge ${rankClass}">${rank}</div>
+          <div class="fav-badge">♡</div>
+          <span style="font-size:34px;">${icon}</span>
+        </div>
+        <div class="card-body">
+          <h3>${salon.name}</h3>
+          <div class="rating-row">
+            <span class="stars">${starString(salon.rating || 4.5)}</span>
+            <span class="rating-num">${(salon.rating || 4.5).toFixed(1)}</span>
+            <span class="rvcount">（${salon.reviews || 0}件のレビュー）</span>
+          </div>
+          <div class="meta-line">${salon.meta}｜<span class="price-tag">Rp${salon.price || '-'}</span>〜</div>
+          <div class="slots-label">本日の空き時間</div>
+          <div class="slots" data-id="${salon.id}"></div>
+        </div>`;
+
+      const slotsWrap = card.querySelector('.slots');
+      salon.slots.forEach((slot, ti) => {
+        const b = document.createElement('button');
+        b.className = 'slot-btn' + (slot.taken ? ' taken' : '');
+        b.textContent = slot.time;
+        b.disabled = slot.taken;
+        b.addEventListener('click', () => bookSlot(salon.id, ti));
+        slotsWrap.appendChild(b);
+      });
+
+      list.appendChild(card);
+    });
+  }
+
+  async function bookSlot(salonId, ti) {
+    const salon = data.find(s => s.id === salonId);
+    if (!salon) return;
+    const slot = salon.slots[ti];
+    if (slot.taken) return;
+
+    // 予約前にサーバー側の最新状態も確認（他の人が同時に予約していたら弾く）
+    const freshDoc = await salonsRef.doc(salonId).get();
+    const freshSlots = freshDoc.data().slots;
+    if (freshSlots[ti].taken) {
+      showToast('その枠はたった今、他の人に予約されました');
+      return;
+    }
+    freshSlots[ti] = { ...freshSlots[ti], taken: true };
+    await salonsRef.doc(salonId).update({ slots: freshSlots });
+    // onSnapshotが自動でrender()し直すので、ここではWhatsAppを開くだけ
+
+    const msg = `Halo ${salon.name}, saya mau booking jam ${slot.time} hari ini lewat Salonku. Apakah jam tersebut masih tersedia?`;
+    const url = `https://wa.me/${salon.wa}?text=${encodeURIComponent(msg)}`;
+    showToast('予約しました — WhatsAppを開いています...');
+    setTimeout(() => window.open(url, '_blank'), 500);
+  }
+
+  const adminToggle = document.getElementById('adminToggle');
+  const adminPanel = document.getElementById('adminPanel');
+  adminToggle.addEventListener('click', () => adminPanel.classList.toggle('open'));
+
+  document.getElementById('a-add').addEventListener('click', async () => {
+    const name = document.getElementById('a-name').value.trim();
+    const meta = document.getElementById('a-meta').value.trim();
+    const price = document.getElementById('a-price').value.trim();
+    const wa = document.getElementById('a-wa').value.trim();
+    const slotsRaw = document.getElementById('a-slots').value.trim();
+    if (!name || !wa || !slotsRaw) { showToast('サロン名・WhatsApp番号・空き時間を入力してください'); return; }
+    const slots = slotsRaw.split(',').map(s => ({ time: s.trim(), taken: false })).filter(s => s.time);
+    await salonsRef.add({ name, meta: meta || '-', price: price || '-', rating: 4.5, reviews: 0, wa, slots });
+    showToast('サロンを追加しました');
+    ['a-name','a-meta','a-price','a-wa','a-slots'].forEach(id => document.getElementById(id).value = '');
+  });
+
+  document.getElementById('a-reset').addEventListener('click', async () => {
+    const snapshot = await salonsRef.get();
+    const batch = db.batch();
+    snapshot.docs.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+    seeded = false; // onSnapshotが空を検知して自動的にDEFAULT_DATAを再投入する
+    showToast('サンプルデータに戻しました');
+  });
+
+  render();
+</script>
+</body>
+</html>
