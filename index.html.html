@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salonku — Booking Salon Surabaya</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --pink: #EC1E63;
+    --pink-deep: #C4104C;
+    --pink-soft: #FFE8EF;
+    --gold: #F2A900;
+    --ink: #2A2226;
+    --ink-soft: #857A80;
+    --line: #F0E4E8;
+    --bg: #FAF7F8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--ink); line-height: 1.5; padding-bottom: 64px; }
+  .wrap { max-width: 460px; margin: 0 auto; }
+
+  .topbar { background: linear-gradient(135deg, var(--pink) 0%, #FF5C8A 100%); padding: 14px 16px 18px; color: white; }
+  .topbar-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .brand { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; display: flex; align-items: center; gap: 6px; }
+  .brand .dot { width: 8px; height: 8px; background: var(--gold); border-radius: 50%; display: inline-block; }
+  .loc { font-size: 12px; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 20px; font-weight: 600; }
+  .searchbar { background: white; border-radius: 10px; padding: 11px 14px; display: flex; align-items: center; gap: 8px; }
+  .searchbar svg { flex-shrink: 0; }
+  .searchbar input { border: none; outline: none; font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 500; color: var(--ink); width: 100%; background: transparent; }
+  .searchbar input::placeholder { color: #A89AA0; }
+
+  .cats { display: flex; gap: 8px; padding: 14px 16px; overflow-x: auto; }
+  .cat-pill { flex-shrink: 0; background: white; border: 1px solid var(--line); color: var(--ink); font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 20px; }
+  .cat-pill.active { background: var(--pink); color: white; border-color: var(--pink); }
+
+  section { padding: 6px 16px 22px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+  .sec-head h2 { font-size: 17px; font-weight: 800; }
+  .sec-head .count { font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--ink-soft); font-size: 13.5px; }
+
+  .salon-list { display: flex; flex-direction: column; gap: 12px; }
+  .salon-card { background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--line); }
+  .photo { height: 118px; position: relative; display: flex; align-items: center; justify-content: center; }
+  .photo-1 { background: linear-gradient(135deg, #FFB3C6, #FF7A9C); }
+  .photo-2 { background: linear-gradient(135deg, #FFD9A0, #F2A900); }
+  .photo-3 { background: linear-gradient(135deg, #C9A0DC, #9D6BB5); }
+  .rank-badge { position: absolute; top: 8px; left: 8px; background: var(--ink); color: white; font-size: 12px; font-weight: 800; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .rank-badge.gold { background: var(--gold); }
+  .card-body { padding: 12px 14px 14px; }
+  .card-body h3 { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+  .rating-row { display: flex; align-items: center; gap: 5px; margin-bottom: 4px; }
+  .stars { color: var(--gold); font-size: 12.5px; letter-spacing: 1px; }
+  .rating-num { font-size: 12.5px; font-weight: 700; color: var(--ink); }
+  .rvcount { font-size: 11.5px; color: var(--ink-soft); }
+  .meta-line { font-size: 12px; color: var(--ink-soft); margin-bottom: 10px; }
+  .price-tag { color: var(--pink-deep); font-weight: 700; }
+
+  .slots-label { font-size: 11.5px; color: var(--ink-soft); font-weight: 700; margin-bottom: 6px; }
+  .slots { display: flex; flex-wrap: wrap; gap: 6px; }
+  .slot-btn { border: 1.5px solid var(--pink); background: var(--pink-soft); color: var(--pink-deep); font-size: 12.5px; font-weight: 700; padding: 7px 11px; border-radius: 8px; }
+  .slot-btn.taken { border-color: var(--line); color: #C4B8BD; background: #F4EFF1; text-decoration: line-through; }
+
+  .admin-toggle { display: block; width: 100%; text-align: center; background: none; border: none; color: var(--ink-soft); font-size: 12.5px; padding: 10px 0; text-decoration: underline; }
+  .admin-panel { display: none; background: white; border: 1px dashed var(--line); border-radius: 14px; padding: 16px; margin-top: 8px; }
+  .admin-panel.open { display: block; }
+  .admin-panel h3 { font-size: 14.5px; margin-bottom: 10px; font-weight: 800; }
+  .field-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .field-row label { font-size: 12px; color: var(--ink-soft); font-weight: 700; }
+  .field-row input { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); font-size: 13.5px; font-family: 'Inter', sans-serif; background: white; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 18px; border-radius: 10px; font-weight: 700; font-size: 13.5px; border: none; width: 100%; }
+  .btn-primary { background: var(--pink); color: white; }
+  .btn-secondary { background: var(--pink-soft); color: var(--pink-deep); margin-top: 6px; }
+
+  .toast { position: fixed; left: 50%; bottom: 76px; transform: translateX(-50%) translateY(20px); background: var(--ink); color: white; padding: 11px 16px; border-radius: 10px; font-size: 13px; max-width: 90vw; opacity: 0; transition: all 0.25s ease; pointer-events: none; z-index: 50; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .bottomnav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--line); display: flex; max-width: 460px; margin: 0 auto; }
+  .nav-item { flex: 1; text-align: center; padding: 8px 0 10px; font-size: 10.5px; font-weight: 700; color: var(--ink-soft); background: none; border: none; }
+  .nav-item.active { color: var(--pink); }
+  .nav-item .ic { font-size: 18px; display: block; margin-bottom: 2px; }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-row">
+      <div class="brand"><span class="dot"></span>Salonku</div>
+      <div class="loc">📍 Surabaya</div>
+    </div>
+    <div class="searchbar">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A89AA0" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="searchInput" placeholder="Cari nama salon...">
+    </div>
+  </div>
+
+  <div class="cats" id="areaBar"></div>
+
+  <section>
+    <div class="sec-head">
+      <h2 id="listTitle">Rekomendasi Salon</h2>
+      <span class="count" id="listCount"></span>
+    </div>
+    <div class="salon-list" id="salonList"></div>
+    <div class="empty-state" id="emptyState" style="display:none;">Tidak ada salon yang cocok.</div>
+
+    <button class="admin-toggle" id="adminToggle">Saya pemilik salon — kelola jadwal</button>
+    <div class="admin-panel" id="adminPanel">
+      <h3>Tambah / atur salon</h3>
+      <div class="field-row"><label>Nama salon</label><input id="a-name" placeholder="Contoh: Ratu Hair Studio"></div>
+      <div class="field-row"><label>Area</label><input id="a-area" placeholder="Contoh: Gubeng"></div>
+      <div class="field-row"><label>Layanan</label><input id="a-meta" placeholder="Contoh: Cukur & Creambath"></div>
+      <div class="field-row"><label>Harga mulai (Rp)</label><input id="a-price" placeholder="Contoh: 65.000"></div>
+      <div class="field-row"><label>Nomor WhatsApp (format 62...)</label><input id="a-wa" placeholder="6281234567890"></div>
+      <div class="field-row"><label>Jam kosong (pisahkan koma)</label><input id="a-slots" placeholder="10.00, 13.00, 16.30"></div>
+      <button class="btn btn-primary" id="a-add">Tambah salon</button>
+      <button class="btn btn-secondary" id="a-reset">Reset ke data contoh</button>
+    </div>
+  </section>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="bottomnav">
+    <button class="nav-item active"><span class="ic">🏠</span>Beranda</button>
+    <button class="nav-item" id="navCari"><span class="ic">🔍</span>Cari</button>
+    <button class="nav-item"><span class="ic">📅</span>Booking</button>
+    <button class="nav-item"><span class="ic">♡</span>Favorit</button>
+    <button class="nav-item"><span class="ic">👤</span>Akun</button>
+  </div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3StwmRccNy4Lq0h7LsFZkJAxs3LYjBPY",
+    authDomain: "mikiya-7291b.firebaseapp.com",
+    projectId: "mikiya-7291b",
+    storageBucket: "mikiya-7291b.firebasestorage.app",
+    messagingSenderId: "558684091733",
+    appId: "1:558684091733:web:031bfdced24ec563faebdc",
+    measurementId: "G-BQTL00WK6D"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const salonsRef = db.collection('salons');
+
+  const PHOTO_CLASS = ['photo-1', 'photo-2', 'photo-3'];
+
+  const DEFAULT_DATA = [
+    { name: 'Ratu Hair Studio', area: 'Gubeng', meta: 'Cukur & Creambath', price: '65.000', rating: 4.8, reviews: 132, wa: '6281234567890',
+      slots: [{time:'10.00', taken:false},{time:'14.00', taken:false},{time:'16.00', taken:true}] },
+    { name: 'Vania Nail & Spa', area: 'Darmo', meta: 'Nail Art & Pijat', price: '90.000', rating: 4.9, reviews: 208, wa: '6281234567891',
+      slots: [{time:'11.30', taken:false},{time:'16.30', taken:false}] },
+    { name: 'De Barber House', area: 'Rungkut', meta: 'Cukur Pria', price: '45.000', rating: 4.6, reviews: 76, wa: '6281234567892',
+      slots: [{time:'09.00', taken:true},{time:'11.00', taken:false},{time:'15.00', taken:false}] },
+    { name: 'Bunga Creambath Corner', area: 'Wonokromo', meta: 'Creambath & Hair Spa', price: '55.000', rating: 4.7, reviews: 94, wa: '6281234567893',
+      slots: [{time:'10.30', taken:false},{time:'13.30', taken:false}] },
+    { name: 'Harmoni Spa & Massage', area: 'Tunjungan', meta: 'Pijat & Refleksi', price: '110.000', rating: 4.9, reviews: 165, wa: '6281234567894',
+      slots: [{time:'12.00', taken:false},{time:'17.00', taken:false},{time:'19.00', taken:false}] },
+  ];
+
+  let data = [];
+  let seeded = false;
+  let activeArea = 'semua';
+  let searchQuery = '';
+
+  salonsRef.orderBy('__name__').onSnapshot(async (snapshot) => {
+    if (snapshot.empty && !seeded) {
+      seeded = true;
+      for (const salon of DEFAULT_DATA) {
+        await salonsRef.add(salon);
+      }
+      return;
+    }
+    data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderAreaBar();
+    render();
+  }, (err) => {
+    console.error(err);
+    showToast('Tidak dapat terhubung ke database');
+  });
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  function starString(rating) {
+    const full = Math.round(rating);
+    return '★'.repeat(full) + '☆'.repeat(5 - full);
+  }
+
+  function renderAreaBar() {
+    const bar = document.getElementById('areaBar');
+    const areas = [...new Set(data.map(s => s.area).filter(Boolean))].sort();
+    bar.innerHTML = '';
+
+    const allPill = document.createElement('div');
+    allPill.className = 'cat-pill' + (activeArea === 'semua' ? ' active' : '');
+    allPill.textContent = 'Semua';
+    allPill.dataset.area = 'semua';
+    bar.appendChild(allPill);
+
+    areas.forEach(area => {
+      const pill = document.createElement('div');
+      pill.className = 'cat-pill' + (activeArea === area ? ' active' : '');
+      pill.textContent = area;
+      pill.dataset.area = area;
+      bar.appendChild(pill);
+    });
+  }
+
+  function getFiltered() {
+    const q = searchQuery.trim().toLowerCase();
+    return data.filter(salon => {
+      const matchesArea = activeArea === 'semua' || salon.area === activeArea;
+      const matchesQuery = !q || (salon.name || '').toLowerCase().includes(q);
+      return matchesArea && matchesQuery;
+    });
+  }
+
+  function render() {
+    const filtered = getFiltered();
+    const list = document.getElementById('salonList');
+    const empty = document.getElementById('emptyState');
+    const count = document.getElementById('listCount');
+
+    count.textContent = filtered.length > 0 ? `${filtered.length} salon` : '';
+
+    list.innerHTML = '';
+    if (filtered.length === 0) {
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    filtered.forEach((salon, si) => {
+      const card = document.createElement('div');
+      card.className = 'salon-card';
+
+      const rank = si + 1;
+      const rankClass = rank === 1 ? 'gold' : '';
+      const photoClass = PHOTO_CLASS[si % PHOTO_CLASS.length];
+
+      card.innerHTML = `
+        <div class="photo ${photoClass}">
+          <div class="rank-badge ${rankClass}">${rank}</div>
+        </div>
+        <div class="card-body">
+          <h3>${salon.name}</h3>
+          <div class="rating-row">
+            <span class="stars">${starString(salon.rating || 4.5)}</span>
+            <span class="rating-num">${(salon.rating || 4.5).toFixed(1)}</span>
+            <span class="rvcount">(${salon.reviews || 0} ulasan)</span>
+          </div>
+          <div class="meta-line">${salon.area} · ${salon.meta} · mulai <span class="price-tag">Rp${salon.price || '-'}</span></div>
+          <div class="slots-label">JAM KOSONG HARI INI</div>
+          <div class="slots" data-id="${salon.id}"></div>
+        </div>`;
+
+      const slotsWrap = card.querySelector('.slots');
+      salon.slots.forEach((slot, ti) => {
+        const b = document.createElement('button');
+        b.className = 'slot-btn' + (slot.taken ? ' taken' : '');
+        b.textContent = slot.time;
+        b.disabled = slot.taken;
+        b.addEventListener('click', () => bookSlot(salon.id, ti));
+        slotsWrap.appendChild(b);
+      });
+
+      list.appendChild(card);
+    });
+  }
+
+  async function bookSlot(salonId, ti) {
+    const salon = data.find(s => s.id === salonId);
+    if (!salon) return;
+    const slot = salon.slots[ti];
+    if (slot.taken) return;
+
+    const freshDoc = await salonsRef.doc(salonId).get();
+    const freshSlots = freshDoc.data().slots;
+    if (freshSlots[ti].taken) {
+      showToast('Jam tersebut baru saja dibooking orang lain');
+      return;
+    }
+    freshSlots[ti] = { ...freshSlots[ti], taken: true };
+    await salonsRef.doc(salonId).update({ slots: freshSlots });
+
+    const msg = `Halo ${salon.name}, saya mau booking jam ${slot.time} hari ini lewat Salonku. Apakah jam tersebut masih tersedia?`;
+    const url = `https://wa.me/${salon.wa}?text=${encodeURIComponent(msg)}`;
+    showToast('Jam dipesan — membuka WhatsApp...');
+    setTimeout(() => window.open(url, '_blank'), 500);
+  }
+
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    searchQuery = e.target.value;
+    render();
+  });
+
+  document.getElementById('areaBar').addEventListener('click', (e) => {
+    const pill = e.target.closest('.cat-pill');
+    if (!pill) return;
+    activeArea = pill.dataset.area;
+    renderAreaBar();
+    render();
+  });
+
+  document.getElementById('navCari').addEventListener('click', () => {
+    document.getElementById('searchInput').focus();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  const adminToggle = document.getElementById('adminToggle');
+  const adminPanel = document.getElementById('adminPanel');
+  adminToggle.addEventListener('click', () => adminPanel.classList.toggle('open'));
+
+  document.getElementById('a-add').addEventListener('click', async () => {
+    const name = document.getElementById('a-name').value.trim();
+    const area = document.getElementById('a-area').value.trim();
+    const meta = document.getElementById('a-meta').value.trim();
+    const price = document.getElementById('a-price').value.trim();
+    const wa = document.getElementById('a-wa').value.trim();
+    const slotsRaw = document.getElementById('a-slots').value.trim();
+    if (!name || !area || !wa || !slotsRaw) { showToast('Isi nama, area, WhatsApp, dan jam kosong dulu ya'); return; }
+    const slots = slotsRaw.split(',').map(s => ({ time: s.trim(), taken: false })).filter(s => s.time);
+    await salonsRef.add({ name, area, meta: meta || '-', price: price || '-', rating: 4.5, reviews: 0, wa, slots });
+    showToast('Salon ditambahkan');
+    ['a-name','a-area','a-meta','a-price','a-wa','a-slots'].forEach(id => document.getElementById(id).value = '');
+  });
+
+  document.getElementById('a-reset').addEventListener('click', async () => {
+    const snapshot = await salonsRef.get();
+    const batch = db.batch();
+    snapshot.docs.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+    seeded = false;
+    activeArea = 'semua';
+    showToast('Data direset ke contoh awal');
+  });
+
+  render();
+</script>
+</body>
+</html>
